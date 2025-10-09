@@ -46,17 +46,33 @@ For guidance on building app builders with AI, see the [Freestyle guide on Build
    Head to [our API keys page](https://admin.freestyle.sh/dashboard/api-tokens) to get yours. We're totally free to use right now!
 
 4. Set up environment variables:
-   Create a `.env` file in the root directory with the following variables:
+   Create a `.env` file in the root directory and add the following variables. Fill in the placeholder values with your actual secrets.
 
-   ```
-   # Database
+   ```env
+   # Database (PostgreSQL)
    DATABASE_URL=postgresql://username:password@localhost:5432/adorable
+
+   # Caching & Sessions (Redis)
+   # For local development, you can use Docker: redis://localhost:6379
+   REDIS_URL=redis://localhost:6379
 
    # Google Gemini API
    GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 
    # Freestyle API
    FREESTYLE_API_KEY=your_freestyle_api_key
+
+   # Authentication (Stack Auth)
+   NEXT_PUBLIC_STACK_PROJECT_ID=<your-project-id>
+   NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=<your-publishable-client-key>
+   STACK_SECRET_SERVER_KEY=<your-secret-server-key>
+
+   # Optional: For fast code edits
+   MORPH_API_KEY=<your-morph-api-key>
+
+   # Optional: For custom preview domains
+   PREVIEW_DOMAIN=<your-domain> # formatted like adorable.app
+
    ```
 
 5. Initialize the database:

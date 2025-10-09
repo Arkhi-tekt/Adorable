@@ -46,8 +46,8 @@ export async function publishApp({ appId }: { appId: string }) {
     throw new Error("User does not have permission to publish this app");
   }
 
-  if (!process.env.PREVIEW_DOMAIN) {
-    throw new Error("Preview domain is not configured");
+  if (!process.env.VERCEL_URL) {
+    throw new Error("This action is only available on Vercel.");
   }
 
   let previewDomain = app.app.previewDomain;
