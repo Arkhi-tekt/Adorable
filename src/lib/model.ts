@@ -8,4 +8,4 @@ if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
 
 // By default, we use a Gemini model, but others like GPT-4 and Claude Opus also work well.
 // See https://sdk.vercel.ai/docs/guides/providers/google-generative-ai for more info.
-export const model = google('models/gemini-1.5-pro-latest');
+export const model = google('models/gemini-2.5-pro-latest');
