@@ -129,20 +129,6 @@ export function ToolMessage({
   );
 }
 
-function DefaultContentRenderer(props: {
-  content: {
-    type: "text";
-    text: string;
-  };
-}) {
-  if (props.content?.type === "text") {
-    return <div className="text-sm text-gray-500">{props.content?.text}</div>;
-  }
-
-  return (
-    <div className="text-sm text-gray-500">{JSON.stringify(props.content)}</div>
-  );
-}
 
 function EditFileTool({
   toolInvocation,
