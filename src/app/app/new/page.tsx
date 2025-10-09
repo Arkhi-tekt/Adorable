@@ -11,7 +11,12 @@ export default async function NewAppRedirectPage({
   searchParams: Promise<{ [key: string]: string | string[] }>;
   params: Promise<{ id: string }>;
 }) {
-  const user = await getUser().catch(() => undefined);
+  const user = await getUser().catch((error) => {
+    // It's possible that getUser() fails for some reason.
+    // We should log the error and then redirect to the sign-in page.
+    console.error("Failed to get user:", error);
+    return undefined;
+  });
   const search = await searchParams;
 
   if (!user) {
@@ -26,11 +31,7 @@ export default async function NewAppRedirectPage({
     });
 
     // After sign in, redirect back to this page with the initial search params
-    redirect(
-      `/handler/sign-in?after_auth_return_to=${encodeURIComponent(
-        "/app/new?" + newParams.toString()
-      )}`
-    );
+    redirect(`/sign-in?after_auth_return_to=${encodeURIComponent(`/app/new?${newParams.toString()}`)}`);
   }
 
   let message: string | undefined;
@@ -40,10 +41,16 @@ export default async function NewAppRedirectPage({
     message = search.message;
   }
 
-  const { id } = await createApp({
-    initialMessage: decodeURIComponent(message),
-    templateId: search.template as string,
-  });
+  try {
+    const { id } = await createApp({
+      initialMessage: decodeURIComponent(message),
+      templateId: search.template as string,
+    });
 
-  redirect(`/app/${id}`);
+    redirect(`/app/${id}`);
+  } catch (error) {
+    console.error("Failed to create app:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    redirect(`/?error=${encodeURIComponent(errorMessage)}`);
+  }
 }
