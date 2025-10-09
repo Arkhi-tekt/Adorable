@@ -52,8 +52,8 @@ For guidance on building app builders with AI, see the [Freestyle guide on Build
    # Database
    DATABASE_URL=postgresql://username:password@localhost:5432/adorable
 
-   # Anthropic API
-   ANTHROPIC_API_KEY=your_anthropic_api_key
+   # Google Gemini API
+   GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 
    # Freestyle API
    FREESTYLE_API_KEY=your_freestyle_api_key
