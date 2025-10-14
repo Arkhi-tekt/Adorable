@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { createApp } from "@/actions/create-app";
 import { redirect } from "next/navigation";
 import { getUser } from "@/auth/stack-auth";

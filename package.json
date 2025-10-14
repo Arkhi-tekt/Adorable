@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "pnpm drizzle-kit push && next build",
-    "start": "next start",
+    "db:push": "pnpm drizzle-kit push",
+    "build": "next build",
+    "start": "node .next/standalone/server.js",
     "lint": "next lint"
   },
   "dependencies": {
