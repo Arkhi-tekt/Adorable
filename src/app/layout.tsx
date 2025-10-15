@@ -1,3 +1,4 @@
+import "zod-to-json-schema";
 import type { Metadata } from "next";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { GeistSans as Geist } from "geist/font/sans";

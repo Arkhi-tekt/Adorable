@@ -11,6 +11,7 @@ import { memory } from "@/mastra/agents/builder";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/dist/client/link";
 import { chatState } from "@/actions/chat-streaming";
+import { UIMessage } from "ai";
 
 export default async function AppPage({
   params,
@@ -60,7 +61,7 @@ export default async function AppPage({
       baseId={app.info.baseId}
       codeServerUrl={codeServerUrl}
       appName={app.info.name}
-      initialMessages={uiMessages}
+      initialMessages={uiMessages.filter(msg => msg.role !== 'data') as UIMessage[]}
       consoleUrl={ephemeralUrl + "/__console"}
       repo={app.info.gitRepo}
       appId={app.info.id}
