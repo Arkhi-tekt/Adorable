@@ -7,6 +7,7 @@ import { freestyle } from "@/lib/freestyle";
 import { templates } from "@/lib/templates";
 import { memory, builderAgent } from "@/mastra/agents/builder";
 import { sendMessageWithStreaming } from "@/lib/internal/stream-manager";
+import { UIMessage, UIMessagePart } from "ai";
 
 export async function createApp({
   initialMessage,
@@ -57,6 +58,7 @@ export async function createApp({
     const appInsertion = await tx
       .insert(appsTable)
       .values({
+        userId: user.userId,
         gitRepo: repo.repoId,
         name: initialMessage,
       })
@@ -95,7 +97,7 @@ export async function createApp({
         {
           text: initialMessage,
           type: "text",
-        },
+        } as UIMessagePart,
       ],
       role: "user",
     });
