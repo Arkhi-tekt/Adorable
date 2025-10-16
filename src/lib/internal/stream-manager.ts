@@ -5,7 +5,7 @@ import { AIService, AIResponse } from "./ai-service";
 import { Agent } from "@mastra/core/agent";
 import { FreestyleDevServerFilesystem } from "freestyle-sandboxes";
 
-const streamContext = createResumableStreamContext({});
+const streamContext = createResumableStreamContext({ waitUntil: null });
 
 export interface StreamState {
   state: string | null;
@@ -140,9 +140,7 @@ export async function setStream(
   const resumableStream = await streamContext.createNewResumableStream(
     appId,
     () => {
-      return responseBody.pipeThrough(
-        new TextDecoderStream()
-      ) as ReadableStream<string>;
+      return responseBody.pipeThrough(new TextDecoderStream() as any);
     }
   );
 
@@ -239,7 +237,7 @@ const createStreamCallbacks = (
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async onStepFinish(_step: { response: { messages: unknown[] } }) {
+    async onStepFinish(_step: { response?: { messages?: unknown[] } }) {
       if (shouldAbort()) {
         await handleStreamLifecycle(appId, "error");
         controller.abort("Aborted stream after step finish");

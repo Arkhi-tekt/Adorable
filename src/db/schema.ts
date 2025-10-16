@@ -22,7 +22,7 @@ export const usersTable = pgTable("users", {
 
 export const appsTable = pgTable("apps", {
   id: uuid("id").primaryKey().defaultRandom(), // Changed from serial to match relations
-  name: text("name").notNull().unique().default("Unnamed App"),
+  name: text("name").notNull().default("Unnamed App"),
   description: text("description"),
   gitRepo: text("git_repo").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
