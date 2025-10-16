@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { PromptInputBasic } from "./chatinput";
 import { Markdown } from "./ui/markdown";
-import { useState } from "react";
 import { ChatContainer } from "./ui/chat-container";
-import { UIMessage, UIMessagePart } from "ai";
+import { UIMessage } from "ai";
 import { ToolMessage } from "./tools";
-import { useQuery } from "@tanstack/react-query";
 import { chatState } from "@/actions/chat-streaming";
 import { CompressedImage } from "@/lib/image-compression";
 import { useChatSafe } from "./use-chat";
@@ -60,31 +60,20 @@ export default function Chat(props: {
   };
 
   const onSubmitWithImages = (text: string, images: CompressedImage[]) => {
-    const parts: Parameters<typeof sendMessage>[0]["parts"] = [];
+    const parts: any[] = [];
 
     if (text.trim()) {
-      parts.push({
-        type: "text",
-        text: text,
-      });
+      parts.push({ type: "text", text });
     }
 
-    images.forEach((image) => {
-      parts.push({
-        type: "file",
-        mediaType: image.mimeType,
-        url: image.data,
-      });
-    });
+    images.forEach((image) =>
+      parts.push({ type: "file", mediaType: image.mimeType, url: image.data })
+    );
 
     sendMessage(
+      { parts },
       {
-        parts,
-      },
-      {
-        headers: {
-          "Adorable-App-Id": props.appId,
-        },
+        headers: { "Adorable-App-Id": props.appId },
       }
     );
     setInput("");
@@ -93,22 +82,14 @@ export default function Chat(props: {
   async function handleStop() {
     await fetch("/api/chat/" + props.appId + "/stream", {
       method: "DELETE",
-      headers: {
-        "Adorable-App-Id": props.appId,
-      },
+      headers: { "Adorable-App-Id": props.appId },
     });
   }
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ transform: "translateZ(0)" }}
-    >
+    <div className="flex flex-col h-full" style={{ transform: "translateZ(0)" }}>
       {props.topBar}
-      <div
-        className="flex-1 overflow-y-auto flex flex-col space-y-6 min-h-0"
-        style={{ overflowAnchor: "auto" }}
-      >
+      <div className="flex-1 overflow-y-auto flex flex-col space-y-6 min-h-0" style={{ overflowAnchor: "auto" }}>
         <ChatContainer autoScroll>
           {messages.map((message: UIMessage) => (
             <MessageBody key={message.id} message={message} />
@@ -119,9 +100,7 @@ export default function Chat(props: {
         <PromptInputBasic
           stop={handleStop}
           input={input}
-          onValueChange={(value) => {
-            setInput(value);
-          }}
+          onValueChange={(value) => setInput(value)}
           onSubmit={onSubmit}
           onSubmitWithImages={onSubmitWithImages}
           isGenerating={props.isLoading || chat?.state === "running"}
@@ -136,13 +115,10 @@ function MessageBody({ message }: { message: UIMessage }) {
     return (
       <div className="flex justify-end py-1 mb-4">
         <div className="bg-neutral-200 dark:bg-neutral-700 rounded-xl px-4 py-1 max-w-[80%] ml-auto">
-          {message.parts.map((part: UIMessagePart, index: number) => {
-            if (part.type === "text") {
-              return <div key={index}>{part.text}</div>;
-            } else if (
-              part.type === "file" &&
-              part.mediaType?.startsWith("image/")
-            ) {
+          {message.parts.map((part: any, index: number) => {
+            if (part.type === "text") return <div key={index}>{part.text}</div>;
+
+            if (part.type === "file" && part.mediaType?.startsWith("image/")) {
               return (
                 <div key={index} className="mt-2">
                   <Image
@@ -156,6 +132,7 @@ function MessageBody({ message }: { message: UIMessage }) {
                 </div>
               );
             }
+
             return <div key={index}>unexpected message</div>;
           })}
         </div>
@@ -166,47 +143,20 @@ function MessageBody({ message }: { message: UIMessage }) {
   if (Array.isArray(message.parts) && message.parts.length !== 0) {
     return (
       <div className="mb-4">
-  {message.parts.map((part: UIMessagePart, index: number) => {
+        {message.parts.map((part: any, index: number) => {
           if (part.type === "text") {
             return (
               <div key={index} className="mb-4">
-                <Markdown className="prose prose-sm dark:prose-invert max-w-none">
-                  {part.text}
-                </Markdown>
+                <Markdown className="prose prose-sm dark:prose-invert max-w-none">{part.text}</Markdown>
               </div>
             );
           }
 
           if (part.type.startsWith("tool-")) {
-            // if (
-            //   part.toolInvocation.state === "result" &&
-            //   part.toolInvocation.result.isError
-            // ) {
-            //   return (
-            //     <div
-            //       key={index}
-            //       className="border-red-500 border text-sm text-red-800 rounded bg-red-100 px-2 py-1 mt-2 mb-4"
-            //     >
-            //       {part.toolInvocation.result?.content?.map(
-            //         (content: { type: "text"; text: string }, i: number) => (
-            //           <div key={i}>{content.text}</div>
-            //         )
-            //       )}
-            //       {/* Unexpectedly failed while using tool{" "}
-            //       {part.toolInvocation.toolName}. Please try again. again. */}
-            //     </div>
-            //   );
-            // }
-
-            // if (
-            //   message.parts!.length - 1 == index &&
-            //   part.toolInvocation.state !== "result"
-            // ) {
             return <ToolMessage key={index} toolInvocation={part} />;
-            // } else {
-            //   return undefined;
-            // }
           }
+
+          return null;
         })}
       </div>
     );
@@ -215,11 +165,7 @@ function MessageBody({ message }: { message: UIMessage }) {
   if (message.parts) {
     return (
       <Markdown className="prose prose-sm dark:prose-invert max-w-none">
-        {message.parts
-          .map((part: MessagePart) =>
-            part.type === "text" ? part.text : "[something went wrong]"
-          )
-          .join("")}
+        {message.parts.map((part: any) => (part.type === "text" ? part.text : "[something went wrong]")).join("")}
       </Markdown>
     );
   }
