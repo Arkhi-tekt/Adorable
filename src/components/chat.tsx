@@ -122,12 +122,12 @@ interface FilePart {
   url: string | ArrayBuffer;
 }
 
-function MessageBody({ message }: { message: UIMessage<TextPart | FilePart> }) {
+function MessageBody({ message }: { message: UIMessage }) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end py-1 mb-4">
         <div className="bg-neutral-200 dark:bg-neutral-700 rounded-xl px-4 py-1 max-w-[80%] ml-auto">
-          {message.parts.map((part, index: number) => {
+          {message.parts.map((part: any, index: number) => {
             if (part.type === "text") return <div key={index}>{part.text}</div>;
 
             if (part.type === "file" && part.mediaType?.startsWith("image/")) {
@@ -145,7 +145,7 @@ function MessageBody({ message }: { message: UIMessage<TextPart | FilePart> }) {
               );
             }
 
-            return <div key={index}>unexpected message</div>;
+            return null; // Ensure all paths return a valid ReactNode
           })}
         </div>
       </div>
@@ -155,7 +155,7 @@ function MessageBody({ message }: { message: UIMessage<TextPart | FilePart> }) {
   if (Array.isArray(message.parts) && message.parts.length !== 0) {
     return (
       <div className="mb-4">
-        {message.parts.map((part, index: number) => {
+        {message.parts.map((part: any, index: number) => {
           if (part.type === "text") {
             return (
               <div key={index} className="mb-4">
@@ -174,10 +174,10 @@ function MessageBody({ message }: { message: UIMessage<TextPart | FilePart> }) {
     );
   }
 
-  if (message.parts) {
+  if (typeof message.parts === 'string') {
     return (
       <Markdown className="prose prose-sm dark:prose-invert max-w-none">
-        {message.parts.map((part) => (part.type === "text" ? part.text : "[something went wrong]")).join("")}
+        {message.parts}
       </Markdown>
     );
   }
