@@ -16,19 +16,11 @@ export async function createApp({
   initialMessage?: string;
   templateId: string;
 }) {
-  console.time("get user");
-  const user = await getUser();
-  console.timeEnd("get user");
   try {
     console.time("get user");
     const user = await getUser();
     console.timeEnd("get user");
 
-  if (!templates[templateId]) {
-    throw new Error(
-      `Template ${templateId} not found. Available templates: ${Object.keys(templates).join(", ")}`
-    );
-  }
     if (!templates[templateId]) {
       throw new Error(
         `Template ${templateId} not found. Available templates: ${Object.keys(
@@ -37,20 +29,6 @@ export async function createApp({
       );
     }
 
-  console.time("git");
-  const repo = await freestyle.createGitRepository({
-    name: "Unnamed App",
-    public: true,
-    source: {
-      type: "git",
-      url: templates[templateId].repo,
-    },
-  });
-  await freestyle.grantGitPermission({
-    identityId: user.freestyleIdentity,
-    repoId: repo.repoId,
-    permission: "write",
-  });
     console.time("git");
     const repo = await freestyle.createGitRepository({
       name: "Unnamed App",
@@ -66,37 +44,18 @@ export async function createApp({
       permission: "write",
     });
 
-  const token = await freestyle.createGitAccessToken({
-    identityId: user.freestyleIdentity,
-  });
     const token = await freestyle.createGitAccessToken({
       identityId: user.freestyleIdentity,
     });
 
-  console.timeEnd("git");
     console.timeEnd("git");
 
-  console.time("dev server");
-  const { mcpEphemeralUrl, fs } = await freestyle.requestDevServer({
-    repoId: repo.repoId,
-  });
-  console.timeEnd("dev server");
     console.time("dev server");
     const { mcpEphemeralUrl, fs } = await freestyle.requestDevServer({
       repoId: repo.repoId,
     });
     console.timeEnd("dev server");
 
-  console.time("database: create app");
-  const app = await db.transaction(async (tx) => {
-    const appInsertion = await tx
-      .insert(appsTable)
-      .values({
-        userId: user.userId,
-        gitRepo: repo.repoId,
-        name: initialMessage,
-      })
-      .returning();
     console.time("database: create app");
     const app = await db.transaction(async (tx) => {
       const appInsertion = await tx
@@ -108,17 +67,6 @@ export async function createApp({
         })
         .returning();
 
-    await tx
-      .insert(appUsers)
-      .values({
-        appId: appInsertion[0].id,
-        userId: user.userId,
-        permissions: "admin",
-        freestyleAccessToken: token.token,
-        freestyleAccessTokenId: token.id,
-        freestyleIdentity: user.freestyleIdentity,
-      })
-      .returning();
       await tx
         .insert(appUsers)
         .values({
@@ -131,19 +79,10 @@ export async function createApp({
         })
         .returning();
 
-    return appInsertion[0];
-  });
-  console.timeEnd("database: create app");
       return appInsertion[0];
     });
     console.timeEnd("database: create app");
 
-  console.time("mastra: create thread");
-  await memory.createThread({
-    threadId: app.id,
-    resourceId: app.id,
-  });
-  console.timeEnd("mastra: create thread");
     console.time("mastra: create thread");
     await memory.createThread({
       threadId: app.id,
@@ -151,17 +90,9 @@ export async function createApp({
     });
     console.timeEnd("mastra: create thread");
 
-  if (initialMessage) {
-    console.time("send initial message");
     if (initialMessage) {
       console.time("send initial message");
 
-    // Send the initial message using the same infrastructure as the chat API
-    await sendMessageWithStreaming(builderAgent, app.id, mcpEphemeralUrl, fs, {
-      id: crypto.randomUUID(),
-      parts: [{ type: "text", text: initialMessage }],
-      role: "user",
-    });
       // Send the initial message using the same infrastructure as the chat API
       await sendMessageWithStreaming(
         builderAgent,
@@ -175,7 +106,6 @@ export async function createApp({
         }
       );
 
-    console.timeEnd("send initial message");
       console.timeEnd("send initial message");
     }
 
@@ -185,6 +115,4 @@ export async function createApp({
     // Re-throw the error to be handled by the caller, or return a specific error response
     throw new Error("App creation failed.");
   }
-
-  return app;
 }
