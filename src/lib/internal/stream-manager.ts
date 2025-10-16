@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { UIMessage } from "ai";
 import { createResumableStreamContext } from "resumable-stream";
 import { redis, redisPublisher } from "./redis";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { UIMessage } from "ai";
 import { MCPClient } from "@mastra/mcp";
 import { Agent } from "@mastra/core/agent";

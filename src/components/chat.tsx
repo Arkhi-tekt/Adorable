@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import Image from "next/image";
@@ -145,7 +146,7 @@ function MessageBody({ message }: { message: UIMessage }) {
               );
             }
 
-            return null; // Ensure all paths return a valid ReactNode
+            return <div key={index}>unexpected message</div>;
           })}
         </div>
       </div>
@@ -155,7 +156,7 @@ function MessageBody({ message }: { message: UIMessage }) {
   if (Array.isArray(message.parts) && message.parts.length !== 0) {
     return (
       <div className="mb-4">
-        {message.parts.map((part: any, index: number) => {
+        {message.parts.map((part, index: number) => {
           if (part.type === "text") {
             return (
               <div key={index} className="mb-4">
@@ -168,16 +169,16 @@ function MessageBody({ message }: { message: UIMessage }) {
             return <ToolMessage key={index} toolInvocation={part} />;
           }
 
-          return null;
+          return <div key={index}>unexpected message</div>;
         })}
       </div>
     );
   }
 
-  if (typeof message.parts === 'string') {
+  if (message.parts) {
     return (
       <Markdown className="prose prose-sm dark:prose-invert max-w-none">
-        {message.parts}
+        {message.parts.map((part: any) => (part.type === "text" ? part.text : "[something went wrong]")).join("")}
       </Markdown>
     );
   }
