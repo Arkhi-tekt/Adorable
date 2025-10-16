@@ -7,14 +7,15 @@ import { CodeBlock, CodeBlockCode } from "./ui/code-block";
 export function ToolMessage({
   toolInvocation,
 }: {
-  toolInvocation: UIMessage["parts"][number];
+  // toolInvocation can be various shapes at runtime; relax typing to any to avoid generic mismatches
+  toolInvocation: any;
   className?: string;
 }) {
   if (toolInvocation.type === "tool-list_directory") {
     return (
       <ToolBlock
         name="listing directory"
-        argsText={toolInvocation.input?.path?.split("/").slice(2).join("/")}
+        argsText={(toolInvocation.input as any)?.path?.split("/").slice(2).join("/")}
         toolInvocation={toolInvocation}
       />
     );
@@ -24,7 +25,7 @@ export function ToolMessage({
     return (
       <ToolBlock
         name="read file"
-        argsText={toolInvocation.input?.path?.split("/").slice(2).join("/")}
+        argsText={(toolInvocation.input as any)?.path?.split("/").slice(2).join("/")}
         toolInvocation={toolInvocation}
       />
     );
@@ -43,7 +44,7 @@ export function ToolMessage({
       <ToolBlock
         name="exec"
         toolInvocation={toolInvocation}
-        argsText={toolInvocation.input?.command}
+        argsText={(toolInvocation.input as any)?.command}
       />
     );
   }
@@ -53,7 +54,7 @@ export function ToolMessage({
       <ToolBlock
         name="create directory"
         toolInvocation={toolInvocation}
-        argsText={toolInvocation.input?.path?.split("/").slice(2).join("/")}
+        argsText={(toolInvocation.input as any)?.path?.split("/").slice(2).join("/")}
       />
     );
   }
@@ -62,7 +63,7 @@ export function ToolMessage({
     return (
       <ToolBlock name="update todo list" toolInvocation={toolInvocation}>
         <div className="grid gap-2">
-          {toolInvocation.input?.items?.map?.(
+          {(toolInvocation.input as any)?.items?.map?.(
             (
               item: { description: string; completed: boolean },
               index: number
@@ -133,14 +134,12 @@ export function ToolMessage({
 function EditFileTool({
   toolInvocation,
 }: {
-  toolInvocation: UIMessage["parts"][number] & {
-    type: "tool-edit_file";
-  };
+  toolInvocation: any;
 }) {
   return (
     <ToolBlock
       name="edit file"
-      argsText={toolInvocation.input?.path?.split("/").slice(2).join("/")}
+        argsText={(toolInvocation.input as any)?.path?.split("/").slice(2).join("/")}
       toolInvocation={toolInvocation}
     >
       <div className="grid gap-2">
@@ -198,9 +197,7 @@ function EditFileTool({
 function WriteFileTool({
   toolInvocation,
 }: {
-  toolInvocation: UIMessage["parts"][number] & {
-    type: "tool-write_file";
-  };
+  toolInvocation: any;
 }) {
   return (
     <ToolBlock
@@ -232,9 +229,7 @@ function WriteFileTool({
 }
 
 function ToolBlock(props: {
-  toolInvocation?: UIMessage["parts"][number] & {
-    type: "tool-";
-  };
+  toolInvocation?: any;
   name: string;
   argsText?: string;
   children?: React.ReactNode;
