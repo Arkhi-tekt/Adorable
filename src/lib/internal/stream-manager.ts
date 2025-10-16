@@ -1,12 +1,12 @@
 // @ts-nocheck
 import { UIMessage } from "ai";
-import { createResumableStreamContext } from "resumable-stream";
+import { createResumableStreamContext, after } from "resumable-stream";
 import { redis, redisPublisher } from "./redis";
 import { AIService, AIResponse } from "./ai-service";
 import { Agent } from "@mastra/core/agent";
 import { FreestyleDevServerFilesystem } from "freestyle-sandboxes";
 
-const streamContext = createResumableStreamContext({ waitUntil: null });
+const streamContext = createResumableStreamContext({ waitUntil: after });
 
 export interface StreamState {
   state: string | null;
