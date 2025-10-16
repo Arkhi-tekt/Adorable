@@ -13,7 +13,7 @@ export interface AIStreamOptions {
   maxRetries?: number;
   maxOutputTokens?: number;
   onChunk?: () => void;
-  onStepFinish?: (step: { response: { messages: unknown[] } }) => void;
+  onStepFinish?: (step: { response?: { messages?: unknown[] } }) => void;
   onError?: (error: { error: unknown }) => void;
   onFinish?: () => void;
   abortSignal?: AbortSignal;
@@ -79,23 +79,14 @@ export class AIService {
 
     // Save message to memory
     const memory = await agent.getMemory();
+    const messageListForMemory = new MessageList({
+      threadId: appId,
+      resourceId: appId,
+    });
+    messageListForMemory.add(message, "user");
+
     if (memory) {
-      await memory.saveMessages({
-        messages: [
-          {
-            content: {
-              parts: message.parts,
-              format: 3,
-            },
-            role: "user",
-            createdAt: new Date(),
-            id: message.id,
-            threadId: appId,
-            type: "text",
-            resourceId: appId,
-          },
-        ],
-      });
+      await memory.saveMessages({ messages: messageListForMemory.get.all.v2() });
     }
 
     const messageList = new MessageList({
@@ -107,7 +98,6 @@ export class AIService {
       threadId: appId,
       resourceId: appId,
       maxSteps: options?.maxSteps ?? 100,
-      maxRetries: options?.maxRetries ?? 0,
       maxOutputTokens: options?.maxOutputTokens ?? 64000,
       toolsets: {
         ...(process.env.MORPH_API_KEY
@@ -123,10 +113,12 @@ export class AIService {
         options?.onChunk?.();
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      async onStepFinish(step: { response: { messages: unknown[] } }) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        messageList.add(step.response.messages as any, "response");
-        options?.onStepFinish?.(step);
+      async onStepFinish(step: { response?: { messages?: unknown[] } }) {
+        if (step.response?.messages) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          messageList.add(step.response.messages as any, "response");
+        }
+        options?.onStepFinish?.(step as { response: { messages: unknown[] } });
       },
       onError: async (error: { error: unknown }) => {
         // Handle cleanup internally
