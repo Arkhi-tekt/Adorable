@@ -93,12 +93,7 @@ export async function createApp({
     // Send the initial message using the same infrastructure as the chat API
     await sendMessageWithStreaming(builderAgent, app.id, mcpEphemeralUrl, fs, {
       id: crypto.randomUUID(),
-      parts: [
-        {
-          text: initialMessage,
-          type: "text",
-        } as UIMessagePart,
-      ],
+      parts: [{ type: "text", text: initialMessage }],
       role: "user",
     });
 
