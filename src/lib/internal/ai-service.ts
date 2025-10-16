@@ -98,7 +98,6 @@ export class AIService {
       threadId: appId,
       resourceId: appId,
       maxSteps: options?.maxSteps ?? 100,
-      maxOutputTokens: options?.maxOutputTokens ?? 64000,
       toolsets: {
         ...(process.env.MORPH_API_KEY
           ? {
@@ -134,18 +133,18 @@ export class AIService {
     });
 
     // Ensure the stream has the proper method
-    if (!stream.toUIMessageStreamResponse) {
+    if (!stream.aisdk.v5.toUIMessageStreamResponse) {
       console.error(
         "Stream does not have toUIMessageStreamResponse method:",
         stream
       );
       throw new Error(
-        "Invalid stream format - missing toUIMessageStreamResponse method"
+        "Invalid stream format - missing aisdk.v5.toUIMessageStreamResponse method"
       );
     }
 
     // Return only what developers need - the stream
-    return { stream };
+    return { stream: stream.aisdk.v5 };
   }
 
   /**

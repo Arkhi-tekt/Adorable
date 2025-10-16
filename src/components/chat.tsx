@@ -12,6 +12,7 @@ import { ToolMessage } from "./tools";
 import { chatState } from "@/actions/chat-streaming";
 import { CompressedImage } from "@/lib/image-compression";
 import { useChatSafe } from "./use-chat";
+import { App, NewApp } from "@/db/schema";
 
 export default function Chat(props: {
   appId: string;

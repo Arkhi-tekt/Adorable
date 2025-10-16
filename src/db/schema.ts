@@ -7,8 +7,8 @@ import {
   pgEnum,
   boolean,
 } from "drizzle-orm/pg-core";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { InferSelectModel, relations, sql } from "drizzle-orm";
+import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import { InferSelectModel, InferInsertModel, relations, sql } from "drizzle-orm";
 
 import type { UIMessage } from "ai";
 
@@ -77,7 +77,7 @@ export const appDeployments = pgTable("app_deployments", {
 
 // Export the types that app-header.tsx needs
 export type App = InferSelectModel<typeof appsTable>;
-export type NewApp = InferSelectModel<typeof appsTable, "insert">;
+export type NewApp = InferInsertModel<typeof appsTable>;
 
 // Optional: Add relations if other tables reference app
 export const appRelations = relations(appsTable, ({ many }) => ({
