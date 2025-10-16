@@ -149,8 +149,8 @@ export type ChatContainerProps = {
   children: React.ReactNode;
   className?: string;
   autoScroll?: boolean;
-  scrollToRef?: React.RefObject<HTMLDivElement | null>;
-  ref?: React.RefObject<HTMLDivElement | null>;
+  scrollToRef?: React.RefObject<HTMLDivElement>;
+  ref?: React.RefObject<HTMLDivElement>;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 function ChatContainer({

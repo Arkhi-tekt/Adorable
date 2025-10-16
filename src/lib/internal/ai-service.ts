@@ -66,85 +66,84 @@ export class AIService {
     message: UIMessage,
     options?: Partial<AIStreamOptions>
   ): Promise<AIResponse> {
-    const mcp = new MCPClient({
-      id: crypto.randomUUID(),
-      servers: {
-        dev_server: {
-          url: new URL(mcpUrl),
+    const mcp = new MCPClient({ id: crypto.randomUUID(), servers: { dev_server: { url: new URL(mcpUrl) } } });
+
+    try {
+      const freestyleToolsets = await mcp.getToolsets();
+
+      // Save message to memory
+      const memory = await agent.getMemory();
+      const messageListForMemory = new MessageList({
+        threadId: appId,
+        resourceId: appId,
+      });
+      messageListForMemory.add(message, "user");
+
+      if (memory) {
+        await memory.saveMessages({ messages: messageListForMemory.get.all.v2() });
+      }
+
+      const messageList = new MessageList({
+        resourceId: appId,
+        threadId: appId,
+      });
+
+      const stream = await agent.stream([], {
+        threadId: appId,
+        resourceId: appId,
+        maxSteps: options?.maxSteps ?? 100,
+        toolsets: {
+          ...(process.env.MORPH_API_KEY
+            ? {
+                morph: {
+                  edit_file: morphTool(fs),
+                },
+              }
+            : {}),
+          ...freestyleToolsets,
         },
-      },
-    });
+        async onChunk() {
+          options?.onChunk?.();
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async onStepFinish(step: { response?: { messages?: unknown[] } }) {
+          if (step.response?.messages) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            messageList.add(step.response.messages as any, "response");
+          }
+          options?.onStepFinish?.(step as { response: { messages: unknown[] } });
+        },
+        onError: async (error: { error: unknown }) => {
+          // Handle cleanup internally
+          await mcp.disconnect();
+          options?.onError?.(error);
+        },
+        onFinish: async () => {
+          // Handle cleanup internally
+          await mcp.disconnect();
+          options?.onFinish?.();
+        },
+        abortSignal: options?.abortSignal,
+      });
 
-    const freestyleToolsets = await mcp.getToolsets();
+      // Ensure the stream has the proper method
+      if (!stream.aisdk.v5.toUIMessageStreamResponse) {
+        console.error(
+          "Stream does not have toUIMessageStreamResponse method:",
+          stream
+        );
+        throw new Error(
+          "Invalid stream format - missing aisdk.v5.toUIMessageStreamResponse method"
+        );
+      }
 
-    // Save message to memory
-    const memory = await agent.getMemory();
-    const messageListForMemory = new MessageList({
-      threadId: appId,
-      resourceId: appId,
-    });
-    messageListForMemory.add(message, "user");
-
-    if (memory) {
-      await memory.saveMessages({ messages: messageListForMemory.get.all.v2() });
+      // Return only what developers need - the stream
+      return { stream: stream.aisdk.v5 };
+    } catch (error) {
+      // Ensure disconnection on any setup error
+      await mcp.disconnect();
+      throw error;
     }
-
-    const messageList = new MessageList({
-      resourceId: appId,
-      threadId: appId,
-    });
-
-    const stream = await agent.stream([], {
-      threadId: appId,
-      resourceId: appId,
-      maxSteps: options?.maxSteps ?? 100,
-      toolsets: {
-        ...(process.env.MORPH_API_KEY
-          ? {
-              morph: {
-                edit_file: morphTool(fs),
-              },
-            }
-          : {}),
-        ...freestyleToolsets,
-      },
-      async onChunk() {
-        options?.onChunk?.();
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      async onStepFinish(step: { response?: { messages?: unknown[] } }) {
-        if (step.response?.messages) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          messageList.add(step.response.messages as any, "response");
-        }
-        options?.onStepFinish?.(step as { response: { messages: unknown[] } });
-      },
-      onError: async (error: { error: unknown }) => {
-        // Handle cleanup internally
-        await mcp.disconnect();
-        options?.onError?.(error);
-      },
-      onFinish: async () => {
-        // Handle cleanup internally
-        await mcp.disconnect();
-        options?.onFinish?.();
-      },
-      abortSignal: options?.abortSignal,
-    });
-
-    // Ensure the stream has the proper method
-    if (!stream.aisdk.v5.toUIMessageStreamResponse) {
-      console.error(
-        "Stream does not have toUIMessageStreamResponse method:",
-        stream
-      );
-      throw new Error(
-        "Invalid stream format - missing aisdk.v5.toUIMessageStreamResponse method"
-      );
-    }
-
-    // Return only what developers need - the stream
-    return { stream: stream.aisdk.v5 };
   }
 
   /**

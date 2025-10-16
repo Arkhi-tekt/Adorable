@@ -88,13 +88,6 @@
       "@ai-sdk/provider-utils": "^3.0.11",
       "@ai-sdk/react": "^2.0.63"
     },
-    "allowedBuildScripts": [
-      "@clerk/shared",
-      "@tailwindcss/oxide",
-      "esbuild",
-      "protobufjs",
-      "unrs-resolver"
-    ],
     "onlyBuiltDependencies": [
       "@clerk/shared",
       "@tailwindcss/oxide",
