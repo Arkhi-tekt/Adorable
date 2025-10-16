@@ -6,7 +6,7 @@ import { PromptInputBasic } from "./chatinput";
 import { Markdown } from "./ui/markdown";
 import { useState } from "react";
 import { ChatContainer } from "./ui/chat-container";
-import { UIMessage, MessagePart } from "ai";
+import { UIMessage, UIMessagePart } from "ai";
 import { ToolMessage } from "./tools";
 import { useQuery } from "@tanstack/react-query";
 import { chatState } from "@/actions/chat-streaming";
@@ -136,7 +136,7 @@ function MessageBody({ message }: { message: UIMessage }) {
     return (
       <div className="flex justify-end py-1 mb-4">
         <div className="bg-neutral-200 dark:bg-neutral-700 rounded-xl px-4 py-1 max-w-[80%] ml-auto">
-          {message.parts.map((part: MessagePart, index: number) => {
+          {message.parts.map((part: UIMessagePart, index: number) => {
             if (part.type === "text") {
               return <div key={index}>{part.text}</div>;
             } else if (
@@ -166,7 +166,7 @@ function MessageBody({ message }: { message: UIMessage }) {
   if (Array.isArray(message.parts) && message.parts.length !== 0) {
     return (
       <div className="mb-4">
-        {message.parts.map((part: MessagePart, index: number) => {
+  {message.parts.map((part: UIMessagePart, index: number) => {
           if (part.type === "text") {
             return (
               <div key={index} className="mb-4">
